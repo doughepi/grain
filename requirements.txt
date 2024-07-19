@@ -1,5 +1,5 @@
-r2r
-click
-imessage-reader
-macnotesapp
-imap-tools
+r2r==0.2.62
+click==8.1.7
+imessage-reader==0.6.1
+macnotesapp==0.6.1
+imap-tools==1.7.0
