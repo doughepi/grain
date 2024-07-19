@@ -4,8 +4,6 @@ Show a language model what it's like to be you by effortlessly fetching, process
 
 ---
 
-## Disclaimer
-
 ⚠️ **DISCLAIMER** ⚠️
 
 This project is a work in progress with big plans to expand in the future. The current implementation is tailored to my personal use and may not cover all potential use cases or be fully optimized. Use at your own risk and stay tuned for upcoming updates and improvements!
