@@ -1,7 +1,7 @@
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import IO, Any, Callable, Dict, Generic, List, TypeVar
+from typing import IO, Any, Callable, Dict, Generic, List, Optional, TypeVar
 from uuid import uuid4
 
 from r2r import R2RClient, generate_id_from_label
@@ -96,21 +96,35 @@ class DataProcessor(ABC, Generic[T]):
             self.data = []
 
     def batch_process(
-        self, client_method: Any, items: List[DataItem[T]], batch_size: int = 1
+        self, client_method: Any, items: List[DataItem[T]], batch_size: int = 5
     ) -> None:
-        for i in range(0, len(items), batch_size):
-            batch = items[i : i + batch_size]
-            try:
-                client_method(
-                    file_paths=[str(item.filename) for item in batch],
-                    metadatas=[item.metadata for item in batch],
-                    document_ids=[item.document_id for item in batch],
-                )
-            except Exception as e:
-                self.logger.error(
-                    f"Error processing batch: {e}", extra={"batch_size": len(batch)}
-                )
-            time.sleep(0.2)
+
+        def item_show_function(batch: Optional[List[DataItem]]) -> Optional[str]:
+            # Concatenate the document IDs for the progress bar.
+            if batch:
+                return ", ".join(item.filename.name for item in batch)
+
+        with self.logger.progress(
+            "Uploading to R2R...",
+            length=len(items),
+            show_percent=True,
+            color=True,
+            item_show_func=item_show_function,
+        ) as progress:
+            for i in range(0, len(items), batch_size):
+                batch = items[i : i + batch_size]
+                try:
+                    client_method(
+                        file_paths=[str(item.filename) for item in batch],
+                        metadatas=[item.metadata for item in batch],
+                        document_ids=[item.document_id for item in batch],
+                    )
+                    progress.update(len(batch), batch)
+                except Exception as e:
+                    self.logger.error(
+                        f"Error processing batch: {e}", extra={"batch_size": len(batch)}
+                    )
+                time.sleep(0.2)
 
     def get_unique_filename(self, extension: str) -> Path:
         return Path(f"{uuid4()}.{extension}")

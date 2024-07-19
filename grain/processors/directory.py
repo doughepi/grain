@@ -43,30 +43,26 @@ class DirectoryProcessor(DataProcessor[bytes]):
             path=path, recursive=recursive, extensions=extensions
         )
 
-        with self.logger.progress(
-            label="Processing files", length=len(files)
-        ) as progress:
-            for file_path in files:
-                self.logger.info(f"Processing file: {file_path}")
+        for file_path in files:
+            self.logger.info(f"Processing file: {file_path}")
 
-                file_hash = self.compute_file_hash(file_path)
+            file_hash = self.compute_file_hash(file_path)
 
-                self.mark_for_ingest(
-                    file_hash,  # Using the file hash as the unique identifier
-                    file_path,
-                    {
-                        "path": str(file_path),
-                        "name": file_path.name,
-                        "suffix": file_path.suffix,
-                        "hash": file_hash,
-                        "stem": file_path.stem,
-                    },
-                )
+            self.mark_for_ingest(
+                file_hash,  # Using the file hash as the unique identifier
+                file_path,
+                {
+                    "path": str(file_path),
+                    "name": file_path.name,
+                    "suffix": file_path.suffix,
+                    "hash": file_hash,
+                    "stem": file_path.stem,
+                },
+            )
 
-                # Save each file so that we're not storing everything in memory.
-                self.ingest(
-                    cleanup=False
-                )  # Cleanup is False to keep the files because we're reading from a place we don't control.
-                progress.update(1)
+            # Save each file so that we're not storing everything in memory.
+            self.ingest(
+                cleanup=False
+            )  # Cleanup is False to keep the files because we're reading from a place we don't control.
 
         self.logger.info("Processing completed successfully.")

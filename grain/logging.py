@@ -1,5 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import Any, Callable, Dict, Iterable, Optional, TextIO
 
 import click
 
@@ -61,5 +62,14 @@ class CLILogger(Logger):
     def error(self, message: str) -> None:
         click.echo(click.style(message, fg="red"), err=True)
 
-    def progress(self, label: str, length: int) -> Progress:
-        return click.progressbar(length=length, label=label)
+    def progress(
+        self,
+        label: Optional[str] = None,
+        length: Optional[int] = None,
+        **kwargs,
+    ) -> Progress:
+        return click.progressbar(
+            label=label,
+            length=length,
+            **kwargs,
+        )

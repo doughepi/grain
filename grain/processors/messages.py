@@ -34,24 +34,20 @@ class MessageProcessor(DataProcessor[List[Tuple[str, str, str, str]]]):
                 else:
                     users[row[0]] = [row]
 
-            with self.logger.progress(
-                label="Processing messages", length=len(users)
-            ) as progress:
-                for user, messages in users.items():
-                    self.logger.info(f"Processing message with {user}...")
+            for user, messages in users.items():
+                self.logger.info(f"Processing message with {user}...")
 
-                    filename = tmpdir / self.get_unique_filename("json")
+                filename = tmpdir / self.get_unique_filename("json")
 
-                    self.write_for_ingest(
-                        user,
-                        filename,
-                        json.dumps(messages).encode("utf-8"),
-                        {
-                            "user": user,
-                        },
-                    )
+                self.write_for_ingest(
+                    user,
+                    filename,
+                    json.dumps(messages).encode("utf-8"),
+                    {
+                        "user": user,
+                    },
+                )
 
-                    self.ingest(cleanup=True)
-                    progress.update(1)
+                self.ingest(cleanup=True)
 
             self.logger.info("Processing completed successfully.")
