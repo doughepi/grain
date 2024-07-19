@@ -9,13 +9,13 @@
     "batch_size": 128,
     "text_splitter": {
       "type": "recursive_character",
-      "chunk_size": 2048,
-      "chunk_overlap": 256
+      "chunk_size": 3072,
+      "chunk_overlap": 64
     },
     "rerank_model": "None"
   },
   "vector_database": {
     "provider": "pgvector",
-    "vecs_collection": "grain_vecs"
+    "vecs_collection": "grain"
   }
 }
