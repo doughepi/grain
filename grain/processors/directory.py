@@ -60,9 +60,8 @@ class DirectoryProcessor(DataProcessor[bytes]):
                 },
             )
 
-            # Save each file so that we're not storing everything in memory.
-            self.ingest(
-                cleanup=False
-            )  # Cleanup is False to keep the files because we're reading from a place we don't control.
+        self.ingest(
+            cleanup=False
+        )  # Cleanup is False to keep the files because we're reading from a place we don't control.
 
         self.logger.info("Processing completed successfully.")

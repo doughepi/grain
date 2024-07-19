@@ -122,7 +122,7 @@ class DataProcessor(ABC, Generic[T]):
                     progress.update(len(batch), batch)
                 except Exception as e:
                     self.logger.error(
-                        f"Error processing batch: {e}", extra={"batch_size": len(batch)}
+                        f"Error processing batch: {e}"
                     )
                 time.sleep(0.2)
 
