@@ -1,0 +1,21 @@
+{
+  "completions": {
+    "provider": "openai"
+  },
+  "embedding": {
+    "provider": "openai",
+    "base_model": "text-embedding-3-large",
+    "base_dimension": 3072,
+    "batch_size": 128,
+    "text_splitter": {
+      "type": "recursive_character",
+      "chunk_size": 2048,
+      "chunk_overlap": 256
+    },
+    "rerank_model": "None"
+  },
+  "vector_database": {
+    "provider": "pgvector",
+    "vecs_collection": "grain_vecs"
+  }
+}
