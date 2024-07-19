@@ -1,6 +1,6 @@
 # Grain
 
-Show a language model what it's like to be you by effortlessly fetching, processing, and uploading your iMessages, notes, and emails to the R2R system.
+Show a language model what it's like to be you by effortlessly fetching, processing, and uploading your data to the R2R for personalized content generation through RAG.
 
 ⚠️ **DISCLAIMER** ⚠️
 
@@ -57,6 +57,11 @@ Grain is powered by [R2R](https://github.com/SciPhi-AI/R2R), an extremely powerf
     ```bash
     # Uploads iMessages to R2R. Mac only.
     python -m grain process messages
+
+    # or
+    python -m grain process directory ~/Documents/Obsidian --extensions md --extensions txt --recursive
+
+    # and a bunch more!
     ```
 
 ## Usage
@@ -69,25 +74,25 @@ python -m grain --help
 
 Roadmap
 
-	- [ ] Improve error handling and logging
-	- [ ] Implement support for additional data sources
-        - [ ] Calendar events
-        - [ ] Contacts
-        - [ ] Reminders
-        - [ ] Generic directories
-        - [ ] Audio recordings and transcripts
-        - [ ] Photos and videos
-        - [ ] Browser history
-        - [ ] Health data
-        - [ ] Location data
-        - [ ] Implement a desktop GUI for less technical users
-        - [ ] Add support for scheduling and automation
+- [x] Improve error handling and logging
+- [ ] Implement support for additional data sources
+    - [ ] Calendar events
+    - [ ] Contacts
+    - [ ] Reminders
+    - [x] Generic directories
+    - [ ] Audio recordings and transcripts
+    - [ ] Photos and videos
+    - [ ] Browser history
+    - [ ] Health data
+    - [ ] Location data
+    - [ ] Implement a desktop GUI for less technical users
+    - [ ] Add support for scheduling and automation
 
 Stretch Goals
 
-	- [ ] A web app for easy data management
-	- [ ] A browser extension for Chrome and Firefox
-	- [ ] A mobile app for iOS and Android
+- [ ] A web app for easy data management
+- [ ] A browser extension for Chrome and Firefox
+- [ ] A mobile app for iOS and Android
 
 ## Contributing
 
