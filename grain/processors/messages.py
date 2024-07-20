@@ -8,15 +8,14 @@ from imessage_reader.fetch_data import FetchData
 from grain.logging import Logger
 from grain.processors.base import DataProcessor
 
-MESSAGES_DB_PATH = Path("/Users/doughepi/Library/Messages/message.db")
-
 
 class MessageProcessor(DataProcessor[List[Tuple[str, str, str, str]]]):
-    def __init__(self, logger: Logger, r2r_client=None) -> None:
+    def __init__(self, logger: Logger, db_path: Path, r2r_client=None) -> None:
         super().__init__(logger=logger, source="Messages", r2r_client=r2r_client)
+        self.db_path = db_path
 
     def fetch_messages(self) -> List[Tuple[str, str, str, str]]:
-        fetch_data = FetchData(db_path=MESSAGES_DB_PATH)
+        fetch_data = FetchData(db_path=self.db_path)
         return fetch_data.get_messages()
 
     def process_messages(self) -> None:

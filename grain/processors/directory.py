@@ -3,6 +3,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import IO, Generator, List
 
+from r2r import generate_id_from_label
+
 from grain.logging import Logger
 from grain.processors.base import DataProcessor
 
@@ -25,14 +27,6 @@ class DirectoryProcessor(DataProcessor[bytes]):
 
         return files
 
-    def compute_file_hash(self, file_path: Path, hash_type: str = "sha256") -> str:
-        """Compute the hash of the file's contents."""
-        hash_func = hashlib.new(hash_type)
-        with file_path.open("rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_func.update(chunk)
-        return hash_func.hexdigest()
-
     def process_directory(
         self,
         path: Path,
@@ -44,18 +38,22 @@ class DirectoryProcessor(DataProcessor[bytes]):
         )
 
         for file_path in files:
-            self.logger.info(f"Processing file: {file_path}")
 
-            file_hash = self.compute_file_hash(file_path)
+            # I guess if a file is empty or only contains whitespace or line feeds, we can skip it.
+            with open(file_path, "r") as f:
+                if not f.read().strip():
+                    self.logger.info(f"Skipping empty file: {file_path}")
+                    continue
+
+            id = str(generate_id_from_label(str(file_path)))
 
             self.mark_for_ingest(
-                file_hash,  # Using the file hash as the unique identifier
+                id,  # Using the file hash as the unique identifier
                 file_path,
                 {
                     "path": str(file_path),
                     "name": file_path.name,
                     "suffix": file_path.suffix,
-                    "hash": file_hash,
                     "stem": file_path.stem,
                 },
             )

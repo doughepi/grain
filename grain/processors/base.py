@@ -1,7 +1,9 @@
+import json
 import time
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from pathlib import Path
-from typing import IO, Any, Callable, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Dict, Generic, List, Optional, TypeVar
 from uuid import uuid4
 
 from r2r import R2RClient, generate_id_from_label
@@ -25,6 +27,9 @@ class DataItem(Generic[T]):
             "source": source,
             **metadata,
         }
+
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, DataItem) and value.document_id == self.document_id
 
     def __repr__(self) -> str:
         return f"DataItem(document_id={self.document_id}, filename={self.filename}, metadata={self.metadata})"
@@ -58,73 +63,71 @@ class DataProcessor(ABC, Generic[T]):
         metadata: Dict[str, Any],
     ) -> None:
         item = DataItem(unique_characteristic, filename, metadata, self.source)
-        with filename.open(filename, "wb") as f:
+        with filename.open("wb") as f:
             f.write(data)
         self.data.append(item)
 
-    def get_existing_document_ids(self) -> set:
-        existing_documents = self.r2r_client.documents_overview()
-        return {doc["document_id"] for doc in existing_documents["results"]}
+    def handle_new_data_item(self, item: DataItem[T]) -> str:
+        try:
+            return self.r2r_client.ingest_files(
+                file_paths=[str(item.filename)],
+                metadatas=[item.metadata],
+                document_ids=[item.document_id],
+            )
+        except Exception as e:
+            self.logger.error(f"Error processing {item.filename}: {e}")
 
-    def process_existing_files(self, client_method: Any) -> None:
-        existing_document_ids = self.get_existing_document_ids()
-        to_update = [
-            item for item in self.data if item.document_id in existing_document_ids
-        ]
-        if to_update:
-            self.logger.info("Updating existing files...")
-            self.batch_process(client_method, to_update)
-            self.logger.info("Update successful.")
+    def handle_updated_data_item(
+        self, item: DataItem[T], wait_on_processing: bool = False
+    ) -> None:
+        if wait_on_processing:
+            while True:
+                documents = self.r2r_client.documents_overview(
+                    document_ids=[item.document_id]
+                ).get("results", [])
+                if len(documents) == 1 and documents[0]["status"] == "success":
+                    break
+                time.sleep(1)
 
-    def process_new_files(self, client_method: Any) -> None:
-        existing_document_ids = self.get_existing_document_ids()
-        to_ingest = [
-            item for item in self.data if item.document_id not in existing_document_ids
-        ]
-        if to_ingest:
-            self.logger.info("Ingesting new files...")
-            self.batch_process(client_method, to_ingest)
-            self.logger.info("Ingest successful.")
+        try:
+            return self.r2r_client.update_files(
+                file_paths=[str(item.filename)],
+                metadatas=[item.metadata],
+                document_ids=[item.document_id],
+            )
+        except Exception as e:
+            self.logger.error(f"Error processing {item.filename}: {e}")
+
+    def item_show_func(self, item: DataItem) -> str:
+        return f"{item.filename}" if item else ""
+
+    def get_document(self, document_id: str) -> Optional[Dict[str, Any]]:
+        documents = self.r2r_client.documents_overview(document_ids=[document_id])
+        documents = documents.get("results", [])
+        return documents[0] if documents else None
 
     def ingest(self, cleanup=False) -> None:
-        self.process_existing_files(self.r2r_client.update_files)
-        self.process_new_files(self.r2r_client.ingest_files)
+        with self.logger.progress(
+            iterable=self.data, label="Processing", item_show_func=self.item_show_func
+        ) as progress:
+            for item in progress:
+                document = self.get_document(item.document_id)
+                if document:
+                    status = document.get("status")
+                    if status == "success":
+                        self.handle_updated_data_item(item)
+                    elif status == "processing":
+                        self.handle_updated_data_item(item, wait_on_processing=True)
+                else:
+                    self.handle_new_data_item(item)
 
         if cleanup:
             for item in self.data:
-                item.filename.unlink()
-            self.data = []
-
-    def batch_process(
-        self, client_method: Any, items: List[DataItem[T]], batch_size: int = 5
-    ) -> None:
-
-        def item_show_function(batch: Optional[List[DataItem]]) -> Optional[str]:
-            # Concatenate the document IDs for the progress bar.
-            if batch:
-                return ", ".join(item.filename.name for item in batch)
-
-        with self.logger.progress(
-            "Uploading to R2R...",
-            length=len(items),
-            show_percent=True,
-            color=True,
-            item_show_func=item_show_function,
-        ) as progress:
-            for i in range(0, len(items), batch_size):
-                batch = items[i : i + batch_size]
                 try:
-                    client_method(
-                        file_paths=[str(item.filename) for item in batch],
-                        metadatas=[item.metadata for item in batch],
-                        document_ids=[item.document_id for item in batch],
-                    )
-                    progress.update(len(batch), batch)
+                    item.filename.unlink()
                 except Exception as e:
-                    self.logger.error(
-                        f"Error processing batch: {e}"
-                    )
-                time.sleep(0.2)
+                    self.logger.error(f"Error cleaning up {item.filename}: {e}")
+            self.data = []
 
     def get_unique_filename(self, extension: str) -> Path:
         return Path(f"{uuid4()}.{extension}")

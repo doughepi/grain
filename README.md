@@ -16,83 +16,9 @@ This is a lofty goal. This iteration of Grain is not without its weaknesses. We'
 
 Grain is powered by [R2R](https://github.com/SciPhi-AI/R2R), an extremely powerful and well-rounded RAG engine that is highly configurable. Most of all, it is designed to be user-friendly and easy to use. By leveraging R2R, we can focus on building the data pipeline and leave the heavy lifting to the amazing work done by the R2R team.
 
-## Features
-
-- **iMessages Integration:** Fetch and process messages effortlessly.
-- **Notes Support:** Seamlessly handle and upload notes.
-- **Email Processing:** Retrieve, process, and upload emails from any IMAP server.
-- **Automatic Data Management:** Ensure unique document IDs and metadata handling.
-- **Batch Processing:** Efficiently handle data in batches to optimize performance.
-
-## Installation
-
-1. Clone the repository:
-
-    ```bash
-    git clone <repository-url>
-    ```
-
-2. Install the required dependencies:
-
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate
-    pip install -r requirements.txt
-    ```
-
-3. Configure the .env file:
-
-    ```bash
-    cp .env.example .env
-    ```
-
-4. Bring up the R2R backend:
-
-    ```bash
-    docker compose up -d
-    ```
-
-5. Run the script:
-
-    ```bash
-    # Uploads iMessages to R2R. Mac only.
-    python -m grain process messages
-
-    # or
-    python -m grain process directory ~/Documents/Obsidian --extensions md --extensions txt --recursive
-
-    # and a bunch more!
-    ```
-
 ## Usage
 
-Get started learning about what Grain can do by using the built-in help command:
-
-```bash
-python -m grain --help
-```
-
-Roadmap
-
-- [x] Improve error handling and logging
-- [ ] Implement support for additional data sources
-    - [ ] Calendar events
-    - [ ] Contacts
-    - [ ] Reminders
-    - [x] Generic directories
-    - [ ] Audio recordings and transcripts
-    - [ ] Photos and videos
-    - [ ] Browser history
-    - [ ] Health data
-    - [ ] Location data
-    - [ ] Implement a desktop GUI for less technical users
-    - [ ] Add support for scheduling and automation
-
-Stretch Goals
-
-- [ ] A web app for easy data management
-- [ ] A browser extension for Chrome and Firefox
-- [ ] A mobile app for iOS and Android
+Coming soon!
 
 ## Contributing
 

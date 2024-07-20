@@ -3,3 +3,4 @@ click==8.1.7
 imessage-reader==0.6.1
 macnotesapp==0.6.1
 imap-tools==1.7.0
+python-dotenv==1.0.1
